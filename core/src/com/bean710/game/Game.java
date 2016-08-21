@@ -25,7 +25,6 @@ import com.badlogic.gdx.utils.UBJsonReader;
 public class Game extends ApplicationAdapter implements InputProcessor {
 	private PerspectiveCamera camera;
 	private ModelBatch modelBatch;
-	private ModelBuilder modelBuilder;
 	private Model model;
 	private ModelInstance modelInstance;
 	private Environment environment;
@@ -60,7 +59,8 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 
 	@Override
 	public void render() {
-		Gdx.gl.glClearColor(0, 0, 0, 1);
+		Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 		
 		camera.update();
