@@ -1,5 +1,7 @@
 package com.bean710.game;
 
+import java.util.ArrayList;
+
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Files;
 import com.badlogic.gdx.Gdx;
@@ -25,6 +27,7 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 	private ModelInstance modelInstance;
 	private Environment environment;
 	private AnimationController controller;
+	private ArrayList<ModelInstance> instances;
 
 	@Override
 	public void create() {
@@ -33,7 +36,7 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 		camera.position.set(0f, 100f, 150f);
 		camera.lookAt(0f, 100f, 0f);
 		camera.near = 0.1f;
-		camera.far = 300f;
+		camera.far = 3000f;
 
 		modelBatch = new ModelBatch(); // Create batch for multiple models
 		
@@ -62,7 +65,7 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 		camera.update();
 		controller.update(Gdx.graphics.getDeltaTime());
 		
-		
+		modelInstance.transform.translate(0, 0, 30*Gdx.graphics.getDeltaTime());
 		
 		modelBatch.begin(camera);
 		modelBatch.render(modelInstance);
