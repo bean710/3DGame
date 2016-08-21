@@ -1,6 +1,7 @@
 package com.bean710.game;
 
 import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Files;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
@@ -15,35 +16,44 @@ import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
+import com.badlogic.gdx.graphics.g3d.loader.G3dModelLoader;
+import com.badlogic.gdx.graphics.g3d.utils.AnimationController;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.UBJsonReader;
 
 public class Game extends ApplicationAdapter implements InputProcessor {
 	private PerspectiveCamera camera;
 	private ModelBatch modelBatch;
 	private ModelBuilder modelBuilder;
-	private Model box;
+	private Model model;
 	private ModelInstance modelInstance;
 	private Environment environment;
+	private AnimationController controller;
 
 	@Override
 	public void create() {
 		// Set up camera
 		camera = new PerspectiveCamera(75, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		camera.position.set(0f, 0f, 3f);
-		camera.lookAt(0f, 0f, 0f);
+		camera.position.set(0f, 100f, 100f);
+		camera.lookAt(0f, 100f, 0f);
 		camera.near = 0.1f;
-		camera.far = 100f;
+		camera.far = 300f;
 
 		modelBatch = new ModelBatch(); // Create batch for multiple models
-		modelBuilder = new ModelBuilder(); // Tool for building models
 		
-		box = modelBuilder.createBox(2f, 2f, 2f, new Material(ColorAttribute.createDiffuse(Color.RED)),
-				VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal); // Create 3 dimensional box
-		modelInstance = new ModelInstance(box, 0, 0, 0); // Create instance of 'box'
+		UBJsonReader jsonReader = new UBJsonReader();
+		
+		G3dModelLoader modelLoader = new G3dModelLoader(jsonReader);
+		
+		model = modelLoader.loadModel(Gdx.files.getFileHandle("model.g3db", Files.FileType.Internal)); // Create 3 dimensional zombie
+		modelInstance = new ModelInstance(model, 0, 0, 0); // Create instance of 'model'
 		
 		environment = new Environment(); // Make the game's environment
 		environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.8f, 0.8f, 0.8f, 1f));
+		
+		controller = new AnimationController(modelInstance);
+		controller.setAnimation("mixamo.com", -1);
 		
 		Gdx.input.setInputProcessor(this);
 	}
@@ -62,7 +72,7 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 
 	@Override
 	public void dispose() {
-		box.dispose();
+		model.dispose();
 		modelBatch.dispose();
 	}
 
