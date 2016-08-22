@@ -26,14 +26,17 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 	private Model model;
 	private ModelInstance modelInstance;
 	private Environment environment;
-	private AnimationController controller;
 	private ArrayList<ModelInstance> instances;
+	private ArrayList<AnimationController> controllers;
 
 	@Override
 	public void create() {
+		instances = new ArrayList<ModelInstance>();
+		controllers = new ArrayList<AnimationController>();
+		
 		// Set up camera
 		camera = new PerspectiveCamera(75, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		camera.position.set(0f, 100f, 150f);
+		camera.position.set(100f, 100f, 300f);
 		camera.lookAt(0f, 100f, 0f);
 		camera.near = 0.1f;
 		camera.far = 3000f;
@@ -45,13 +48,28 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 		G3dModelLoader modelLoader = new G3dModelLoader(jsonReader);
 		
 		model = modelLoader.loadModel(Gdx.files.getFileHandle("model.g3db", Files.FileType.Internal)); // Create 3 dimensional zombie
-		modelInstance = new ModelInstance(model, 0, 0, 0); // Create instance of 'model'
+		instances.add(new ModelInstance(model, 0, 0, 0)); // Create instance of 'model'
+		/*instances.add(new ModelInstance(model, 100, 0, 0)); // Create instance of 'model'
+		instances.add(new ModelInstance(model, -100, 0, 0)); // Create instance of 'model'
+		instances.add(new ModelInstance(model, 200, 0, 0)); // Create instance of 'model'
+		instances.add(new ModelInstance(model, -200, 0, 0)); // Create instance of 'model'
+		instances.add(new ModelInstance(model, 300, 0, 0)); // Create instance of 'model'
+		instances.add(new ModelInstance(model, -300, 0, 0)); // Create instance of 'model'
+		instances.add(new ModelInstance(model, 400, 0, 0)); // Create instance of 'model'
+		instances.add(new ModelInstance(model, -400, 0, 0)); // Create instance of 'model'
+		instances.add(new ModelInstance(model, 500, 0, 0)); // Create instance of 'model'
+		instances.add(new ModelInstance(model, -500, 0, 0)); // Create instance of 'model'
+		instances.add(new ModelInstance(model, 600, 0, 0)); // Create instance of 'model'
+*/		
 		
 		environment = new Environment(); // Make the game's environment
 		environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.8f, 0.8f, 0.8f, 1f));
 		
-		controller = new AnimationController(modelInstance);
-		controller.setAnimation("mixamo.com", -1);
+		for (ModelInstance modelInstance : instances) {
+			AnimationController temp = new AnimationController(modelInstance);
+			temp.setAnimation("mixamo.com", -1);
+			controllers.add(temp);
+		}
 		
 		Gdx.input.setInputProcessor(this);
 	}
@@ -63,12 +81,17 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 		
 		camera.update();
-		controller.update(Gdx.graphics.getDeltaTime());
+		for (AnimationController controller : controllers) {
+			controller.update(Gdx.graphics.getDeltaTime());
+		}
 		
-		modelInstance.transform.translate(0, 0, 30*Gdx.graphics.getDeltaTime());
+		for (ModelInstance modelInstance : instances) {
+			modelInstance.transform.translate(0, 0, 30*Gdx.graphics.getDeltaTime());
+		}
 		
 		modelBatch.begin(camera);
-		modelBatch.render(modelInstance);
+		for (ModelInstance modelInstance : instances)
+			modelBatch.render(modelInstance);
 		modelBatch.end();
 		
 	}
@@ -83,10 +106,10 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 	public boolean keyDown(int keycode) {
 		//TODO MAKE THESE TEMPORARY VARIABLES
 		if (keycode == Input.Keys.LEFT) {
-			camera.rotateAround(new Vector3(0f, 0f, 0f), new Vector3(0f, 1f, 0f), 10f);
+			camera.rotateAround(new Vector3(camera.position.x, camera.position.y, camera.position.z), new Vector3(0f, 1f, 0f), 10f);
 		}
 		if (keycode == Keys.RIGHT) {
-			camera.rotateAround(new Vector3(0f, 0f, 0f), new Vector3(0f, 1f, 0f), -10f);
+			camera.rotateAround(new Vector3(camera.position.x, camera.position.y, camera.position.z), new Vector3(0f, 1f, 0f), -10f);
 		}
 		
 		return true;
