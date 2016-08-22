@@ -24,18 +24,22 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 	private PerspectiveCamera camera;
 	private ModelBatch modelBatch;
 	private Model model;
-	private ModelInstance modelInstance;
 	private Environment environment;
 	private ArrayList<ModelInstance> instances;
 	private ArrayList<AnimationController> controllers;
-
+	
+	private boolean left;
+	private boolean right;
+	private boolean up;
+	private boolean down;
+	
 	@Override
 	public void create() {
 		instances = new ArrayList<ModelInstance>();
 		controllers = new ArrayList<AnimationController>();
 		
 		// Set up camera
-		camera = new PerspectiveCamera(75, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		camera = new PerspectiveCamera(60, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		camera.position.set(100f, 100f, 300f);
 		camera.lookAt(0f, 100f, 0f);
 		camera.near = 0.1f;
@@ -93,6 +97,20 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 		for (ModelInstance modelInstance : instances)
 			modelBatch.render(modelInstance);
 		modelBatch.end();
+
+		//TODO MAKE THESE TEMPORARY VARIABLES
+		if (right) {
+			camera.rotateAround(new Vector3(camera.position.x, camera.position.y, camera.position.z), new Vector3(0f, 1f, 0f), -2f);
+		}
+		if (left) {
+			camera.rotateAround(new Vector3(camera.position.x, camera.position.y, camera.position.z), new Vector3(0f, 1f, 0f), 2f);
+		}
+		if (up) {
+			camera.position.set(camera.position.x+camera.direction.x*3, camera.position.y, camera.position.z + camera.direction.z*5);
+		}
+		if (down) {
+			camera.position.set(camera.position.x-camera.direction.x*3, camera.position.y, camera.position.z - camera.direction.z*5);
+		}
 		
 	}
 
@@ -104,12 +122,17 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 
 	@Override
 	public boolean keyDown(int keycode) {
-		//TODO MAKE THESE TEMPORARY VARIABLES
 		if (keycode == Input.Keys.LEFT) {
-			camera.rotateAround(new Vector3(camera.position.x, camera.position.y, camera.position.z), new Vector3(0f, 1f, 0f), 10f);
+			left = true;
 		}
-		if (keycode == Keys.RIGHT) {
-			camera.rotateAround(new Vector3(camera.position.x, camera.position.y, camera.position.z), new Vector3(0f, 1f, 0f), -10f);
+		if (keycode == Input.Keys.RIGHT) {
+			right = true;
+		}
+		if (keycode == Input.Keys.UP) {
+			up = true;
+		}
+		if (keycode == Input.Keys.DOWN) {
+			down = true;
 		}
 		
 		return true;
@@ -117,7 +140,19 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 
 	@Override
 	public boolean keyUp(int keycode) {
-		return false;
+		if (keycode == Input.Keys.LEFT) {
+			left = false;
+		}
+		if (keycode == Keys.RIGHT) {
+			right = false;
+		}
+		if (keycode == Keys.UP) {
+			up = false;
+		}
+		if (keycode == Keys.DOWN) {
+			down = false;
+		}
+		return true;
 	}
 
 	@Override
