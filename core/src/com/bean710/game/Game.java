@@ -8,22 +8,30 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Environment;
+import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.loader.G3dModelLoader;
 import com.badlogic.gdx.graphics.g3d.utils.AnimationController;
+import com.badlogic.gdx.graphics.g3d.utils.FirstPersonCameraController;
+import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.UBJsonReader;
 
 public class Game extends ApplicationAdapter implements InputProcessor {
 	private PerspectiveCamera camera;
 	private ModelBatch modelBatch;
+	private ModelBuilder modelBuilder;
 	private Model model;
+	private Model box;
+	private ModelInstance boxI;
 	private Environment environment;
 	private ArrayList<ModelInstance> instances;
 	private ArrayList<AnimationController> controllers;
@@ -32,6 +40,10 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 	private boolean right;
 	private boolean up;
 	private boolean down;
+	private int mouseY;
+	private int mouseX;
+	private float rotSpeed;
+	private Vector3 tmp = new Vector3();
 	
 	@Override
 	public void create() {
@@ -44,12 +56,21 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 		camera.lookAt(0f, 100f, 0f);
 		camera.near = 0.1f;
 		camera.far = 3000f;
+		
+		mouseY = 0;
+		mouseX = 0;
+		rotSpeed = 0.2f;
 
 		modelBatch = new ModelBatch(); // Create batch for multiple models
+		modelBuilder = new ModelBuilder();
 		
 		UBJsonReader jsonReader = new UBJsonReader();
 		
 		G3dModelLoader modelLoader = new G3dModelLoader(jsonReader);
+		
+		box = modelBuilder.createBox(10000f, 1f, 10000f, new Material(ColorAttribute.createDiffuse(Color.RED)),
+ 				VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+		boxI = new ModelInstance(box, 0, -1, 0);
 		
 		model = modelLoader.loadModel(Gdx.files.getFileHandle("model.g3db", Files.FileType.Internal)); // Create 3 dimensional zombie
 		instances.add(new ModelInstance(model, 0, 0, 0)); // Create instance of 'model'
@@ -76,6 +97,7 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 		}
 		
 		Gdx.input.setInputProcessor(this);
+		Gdx.input.setCursorCatched(true);
 	}
 
 	@Override
@@ -94,16 +116,17 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 		}
 		
 		modelBatch.begin(camera);
+		modelBatch.render(boxI);
 		for (ModelInstance modelInstance : instances)
 			modelBatch.render(modelInstance);
 		modelBatch.end();
 
 		//TODO MAKE THESE TEMPORARY VARIABLES
 		if (right) {
-			camera.rotateAround(new Vector3(camera.position.x, camera.position.y, camera.position.z), new Vector3(0f, 1f, 0f), -2f);
+			camera.position.set(camera.position.x-camera.direction.z*3, camera.position.y, camera.position.z+camera.direction.x*3);
 		}
 		if (left) {
-			camera.rotateAround(new Vector3(camera.position.x, camera.position.y, camera.position.z), new Vector3(0f, 1f, 0f), 2f);
+			camera.position.set(camera.position.x+camera.direction.z*3, camera.position.y, camera.position.z-camera.direction.x*3);		
 		}
 		if (up) {
 			camera.position.set(camera.position.x+camera.direction.x*3, camera.position.y, camera.position.z + camera.direction.z*5);
@@ -122,17 +145,21 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 
 	@Override
 	public boolean keyDown(int keycode) {
-		if (keycode == Input.Keys.LEFT) {
+		if (keycode == Input.Keys.A) {
 			left = true;
 		}
-		if (keycode == Input.Keys.RIGHT) {
+		if (keycode == Input.Keys.D) {
 			right = true;
 		}
-		if (keycode == Input.Keys.UP) {
+		if (keycode == Input.Keys.W) {
 			up = true;
 		}
-		if (keycode == Input.Keys.DOWN) {
+		if (keycode == Input.Keys.S) {
 			down = true;
+		}
+		
+		if (keycode == Input.Keys.ESCAPE) {
+			Gdx.input.setCursorCatched(false);
 		}
 		
 		return true;
@@ -140,16 +167,16 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 
 	@Override
 	public boolean keyUp(int keycode) {
-		if (keycode == Input.Keys.LEFT) {
+		if (keycode == Input.Keys.A) {
 			left = false;
 		}
-		if (keycode == Keys.RIGHT) {
+		if (keycode == Keys.D) {
 			right = false;
 		}
-		if (keycode == Keys.UP) {
+		if (keycode == Keys.W) {
 			up = false;
 		}
-		if (keycode == Keys.DOWN) {
+		if (keycode == Keys.S) {
 			down = false;
 		}
 		return true;
@@ -177,6 +204,13 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 
 	@Override
 	public boolean mouseMoved(int screenX, int screenY) {
+		float deltaX = -Gdx.input.getDeltaX() * 0.5f;
+		float deltaY = -Gdx.input.getDeltaY() * 0.5f;
+		camera.direction.rotate(camera.up, deltaX);
+		tmp.set(camera.direction).crs(camera.up).nor();
+		camera.direction.rotate(tmp, deltaY);
+// camera.up.rotate(tmp, deltaY);
+		
 		return false;
 	}
 
